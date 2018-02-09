@@ -1,6 +1,6 @@
 <div class="panel panel-default" style = "margin-left:10px;">
   <div class="panel-heading">
-    <div class="row pad-left-right">
+    <div class="row" style = "margin:10px;">
       <span class="pull-left title">Contacts</span>
       <a href="#" class="btn btn-success pull-right">New Contact</a>
     </div>
@@ -8,14 +8,7 @@
   <div class="panel-body">
     <div class="row">
       <div class="col-xs-12">
-        <a *ngFor="let contact of contacts" class="list-group-item clearfix">
-          <div class="pull-left">
-            <span class="list-group-item-handling" style="...">{{contact?.name}}</span>
-          </div>
-          <span class="pull-right">
-            <img [src]="contact?.imageUrl" alt="" class="img-responsive">
-          </span>
-        </a>
+        <cms-contact-item *ngFor="let contact of contacts" [contact] = "contact" (click)="onSelected(contact)"></cms-contact-item>
       </div>
     </div>
   </div>

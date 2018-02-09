@@ -7,4 +7,9 @@ import { Component } from '@angular/core';
 })
 export class AppComponent {
   title = 'cms';
+  selectedFeature: String = 'documents'; //Initialize variable of type string, and set it to documents
+
+  switchView(selectedFeature: string){
+    this.selectedFeature = selectedFeature;
+  }
 }
