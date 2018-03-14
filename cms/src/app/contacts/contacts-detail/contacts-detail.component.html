@@ -1,5 +1,5 @@
 <div class="panel panel-default">
-<a href="#" class="list-group-item clear-fix">
+<a class="list-group-item clear-fix">
   <div class="panel-heading">
     <h3>{{ contact?.name }}</h3>
     <div class="row">
@@ -8,8 +8,8 @@
       </div>
       <div class="pull-right" style="margin-top: 2rem;">
         <div class="btn-block">
-          <button type="button" class="btn btn-primary">Edit</button>
-          <button type="button" class="btn btn-danger">Delete</button>
+          <a routerLink="../{{contact?.id}}/edit" routerLinkActive="active" class="btn btn-primary">Edit</a>
+          <a routerLink="../../contacts" routerLinkActive="active" (click)="onDelete()" class="btn btn-danger">Delete</a>
         </div>
       </div>
     </div>
