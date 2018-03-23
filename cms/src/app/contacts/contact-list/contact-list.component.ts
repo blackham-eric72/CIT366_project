@@ -2,6 +2,7 @@ import { Component, OnInit, EventEmitter, Output } from '@angular/core';
 import {Contact} from "../contact.model";
 import {ContactsService} from "../contacts.service";
 import {Document} from "../../documents/documents.model";
+import {Subscription} from "rxjs/Subscription";
 
 @Component({
   selector: 'cms-contact-list',
@@ -10,8 +11,7 @@ import {Document} from "../../documents/documents.model";
 })
 export class ContactListComponent implements OnInit {
   // THE OLD ONE: @Output() selectedContactEvent = new EventEmitter<Contact>();
-
-
+  private subscription: Subscription;
   contact: Contact = null;
   contacts: Contact[] = [];
   onSelected(contact: Contact){
@@ -24,10 +24,20 @@ export class ContactListComponent implements OnInit {
 
   ngOnInit() {
     this.contacts = this.contactsService.getContacts();
-    this.contactsService.contactChangedEvent.subscribe((contacts: Contact[]) =>{
-      this.contacts = contacts;
-    });
+    this.contactsService.contactChangedEvent
+      .subscribe((contacts: Contact[]) => {
+        this.contacts = contacts;
+      });
+    this.subscription = this.contactsService.contactListChangedEvent
+      .subscribe(
+        (contactsList: Contact[]) => {
+          this.contacts = contactsList;
+        });
   }
+  ngOnDestroy() {
+    this.subscription.unsubscribe();
+  }
+
 
 
 }

@@ -2,13 +2,14 @@
   <div class="panel-heading">
     <div class="row" style = "margin:10px;">
       <span class="pull-left title">Contacts</span>
-      <a href="#" class="btn btn-success pull-right">New Contact</a>
+      <a routerLink="new" class="btn btn-success pull-right">New Contact</a>
     </div>
   </div>
   <div class="panel-body">
     <div class="row">
       <div class="col-xs-12">
-        <cms-contact-item *ngFor="let contact of contacts" [contact] = "contact" (click)="onSelected(contact)"></cms-contact-item>
+        <cms-contact-item *ngFor="let contact of contacts" [contact] = "contact" (click)="onSelected(contact)"
+                          dnd-draggable [dragEnabled]="true" [dragData]="contact" [dropZones]="['contactGroup']"></cms-contact-item>
       </div>
     </div>
   </div>
