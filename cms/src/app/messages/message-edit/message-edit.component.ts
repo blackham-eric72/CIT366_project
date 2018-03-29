@@ -21,6 +21,7 @@ export class MessageEditComponent implements OnInit {
     const newMessage = new Message(msgId,subjectVal, msgTxtVal, this.currentSender);
     this.addMessageEvent.emit(newMessage);
     this.messagesService.addMessage(newMessage);
+    console.log("This is only for a test commit.... ")
   }
 
   onClear(){
