@@ -64,6 +64,7 @@ getDocuments() :Document[]{
     this.maxDocumentId++;
     newDocument.id = this.maxDocumentId.toString();
     this.documents.push(newDocument);
+
     let documentsListClone = this.documents.slice();
     this.documentListChangedEvent.next(documentsListClone);
   }
@@ -84,7 +85,7 @@ getDocuments() :Document[]{
     if( document == null) return;
     let pos = this.documents.indexOf(document);
     if( pos < 0 ) return;
-    this.documents = this.documents.splice( pos, 1);
+    this.documents.splice( pos, 1);
     let documentsListClone = this.documents.slice();
     this.documentListChangedEvent.next(documentsListClone);
   }

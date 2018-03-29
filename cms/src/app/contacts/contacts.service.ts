@@ -26,6 +26,13 @@ contactSelectedEvent = new EventEmitter<Contact>();
 //     this.contactChangedEvent.emit(this.contacts.slice());
 //   }
 
+
+  getContactFromDB(): Contact[] {
+    if(this.contacts) {
+      return this.contacts.slice();
+    }
+
+  }
   getContacts() :Contact[]{
     return this.contacts.slice();
   } ;
@@ -89,7 +96,7 @@ contactSelectedEvent = new EventEmitter<Contact>();
     if( contact == null) return;
     let pos = this.contacts.indexOf(contact);
     if( pos < 0 ) return;
-    this.contacts = this.contacts.splice( pos, 1);
+    this.contacts.splice( pos, 1);
     let documentsListClone = this.contacts.slice();
     this.contactListChangedEvent.next(documentsListClone);
   }
