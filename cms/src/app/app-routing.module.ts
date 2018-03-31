@@ -24,7 +24,7 @@ const appRoutes: Routes = [
   {path: 'messages', component: MessagesComponent}
 ]
 
-// Just seeing if this works.... 
+
 
 @NgModule({
   imports: [RouterModule.forRoot(appRoutes)],

@@ -3,6 +3,8 @@ import { MOCKDOCUMENTS } from  "./MOCKDOCUMENTS";
 import {Document} from "./documents.model";
 import { Subject} from "rxjs/Subject";
 import {Contact} from "../contacts/contact.model";
+import {Http, Response} from "@angular/http";
+import 'rxjs/Rx';
 
 @Injectable()
 export class DocumentsService {
@@ -11,6 +13,7 @@ export class DocumentsService {
 documentChangedEvent = new EventEmitter<Document[]>()
 documents: Document[] = [];
 documentSelectedEvent = new EventEmitter<Document>();
+
 getDocuments() :Document[]{
     return this.documents.slice();
 } ;
@@ -23,18 +26,7 @@ getDocuments() :Document[]{
     }//end for
     return null;
   }
-  // THE OLD DELETE DOCUMENT FUNCTION!!!
-  // deleteDocument(document: Document){
-  //   if(document == null){
-  //     return
-  //   }
-  //   const pos = this.documents.indexOf(document);
-  //   if(pos < 0 ){
-  //     return;
-  //   }
-  //   this.documents.splice(pos,1);
-  //   this.documentChangedEvent.emit(this.documents.slice());
-  // }
+
 
   getMaxId():number {
 
@@ -48,14 +40,40 @@ getDocuments() :Document[]{
     } //end for
     return maxId;
   }
-  // addDocument(newDocument: Document){
-  //   if(newDocument == null) return;
-  //   this.maxDocumentId++;
-  //   newDocument.id = this.maxDocumentId.toString();
-  //   console.log('addDocument-newDocument: ' + newDocument);
-  //   this.documents.push(newDocument);
-  //
-  // }
+
+  initDocuments(){
+    this.http.get('https://cmscit366.firebaseio.com/documents.json')
+      .map(
+        (response: Response) => {
+          const documents: Document[] = response.json();
+          return documents;
+        }
+      )
+      .subscribe(
+        (documents: Document[]) => {
+          this.documents = documents;
+          this.maxDocumentId = this.getMaxId();
+          this.documentListChangedEvent.next(this.documents.slice());
+        }
+
+      )
+
+  }
+
+  storeDocuments(){
+    let documentArray = JSON.stringify(this.documents);
+    console.log('store documents method called');
+    console.log('the array that should be passed on is this: ' + documentArray);
+   this.http.put('https://cmscit366.firebaseio.com/documents.json', documentArray)
+     .subscribe(
+       (response: Response)=> {
+         console.log(response)
+         console.log('Response has happened');
+
+       }
+  );
+  }
+
 
   addDocument(newDocument: Document) {
     if (newDocument === undefined || newDocument === null) {
@@ -66,7 +84,7 @@ getDocuments() :Document[]{
     this.documents.push(newDocument);
 
     let documentsListClone = this.documents.slice();
-    this.documentListChangedEvent.next(documentsListClone);
+    this.storeDocuments();
   }
 
   updateDocument(originalDocument: Document, newDocument: Document){
@@ -77,7 +95,7 @@ getDocuments() :Document[]{
     newDocument.id = originalDocument.id;
     this.documents[pos] = newDocument;
     let documentsListClone = this.documents.slice();
-    this.documentListChangedEvent.next(documentsListClone);
+    this.storeDocuments();;
 
   }
 
@@ -87,12 +105,11 @@ getDocuments() :Document[]{
     if( pos < 0 ) return;
     this.documents.splice( pos, 1);
     let documentsListClone = this.documents.slice();
-    this.documentListChangedEvent.next(documentsListClone);
+    this.storeDocuments();;
   }
 
-  constructor(){
-    this.documents = MOCKDOCUMENTS;
-    this.maxDocumentId = this.getMaxId();
+  constructor(private http: Http){
+  this.initDocuments();
   }
 
 }

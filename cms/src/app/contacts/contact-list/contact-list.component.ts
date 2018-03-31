@@ -11,11 +11,17 @@ import {Subscription} from "rxjs/Subscription";
 })
 export class ContactListComponent implements OnInit {
   // THE OLD ONE: @Output() selectedContactEvent = new EventEmitter<Contact>();
+
+  term: string = '';
   private subscription: Subscription;
   contact: Contact = null;
   contacts: Contact[] = [];
   onSelected(contact: Contact){
     this.contactsService.contactSelectedEvent.emit(contact);
+  }
+
+  onKeyPress(value: string){
+    this.term= value;
   }
 
   constructor( private contactsService: ContactsService){ }

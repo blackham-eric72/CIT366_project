@@ -3,6 +3,8 @@ import { Contact } from './contact.model';
 import { MOCKCONTACTS } from './MOCKCONTACTS';
 import {Subject} from "rxjs/Subject";
 import {Document} from "../documents/documents.model";
+import {Http, Response} from "@angular/http";
+import 'rxjs/Rx';
 @Injectable()
 export class ContactsService {
  maxContactId: number;
@@ -11,21 +13,6 @@ export class ContactsService {
  contactListChangedEvent = new Subject<Contact[]>();
 
 contactSelectedEvent = new EventEmitter<Contact>();
-
-// deleteContact(contact: Contact){
-//
-//     if(contact == null){
-//       return
-//     }
-//     const pos = this.contacts.indexOf(contact);
-//     if(pos < 0 ){
-//       return;
-//     }
-//
-//     this.contacts.splice(pos,1);
-//     this.contactChangedEvent.emit(this.contacts.slice());
-//   }
-
 
   getContactFromDB(): Contact[] {
     if(this.contacts) {
@@ -57,12 +44,6 @@ contactSelectedEvent = new EventEmitter<Contact>();
     } //end for
     return maxId;
   }
-  // addContact(newContact: Contact){
-  //   if(newContact == null) return;
-  //   this.maxContactId++;
-  //   newContact.id = this.maxContactId.toString();
-  //   this.contacts.push(newContact);
-  // }
 
 
   addContact(newContact: Contact) {
@@ -73,13 +54,8 @@ contactSelectedEvent = new EventEmitter<Contact>();
     newContact.id = this.maxContactId.toString();
     this.contacts.push(newContact);
     let contactsListClone = this.contacts.slice();
-    this.contactListChangedEvent.next(contactsListClone);
+    this.storeContacts;
   }
-
-
-
-
-
   updateContact(originalContact: Contact, newContact: Contact){
     if( originalContact == null || newContact == null) return null;
     let pos = this.contacts.indexOf(originalContact);
@@ -88,7 +64,7 @@ contactSelectedEvent = new EventEmitter<Contact>();
     newContact.id = originalContact.id;
     this.contacts[pos] = newContact;
     let contactsListClone = this.contacts.slice();
-    this.contactListChangedEvent.next(contactsListClone);
+    this.storeContacts;
 
   }
 
@@ -98,12 +74,43 @@ contactSelectedEvent = new EventEmitter<Contact>();
     if( pos < 0 ) return;
     this.contacts.splice( pos, 1);
     let documentsListClone = this.contacts.slice();
-    this.contactListChangedEvent.next(documentsListClone);
+    this.storeContacts();
   }
 
-  constructor() {
-    this.contacts = MOCKCONTACTS;
-    this.maxContactId = this.getMaxId();
+  initContacts(){
+    this.http.get('https://cmscit366.firebaseio.com/contacts.json')
+      .map(
+        (response: Response) => {
+          const contacts: Contact[] = response.json();
+          return contacts;
+        }
+      )
+      .subscribe(
+        (contacts: Contact[]) => {
+          this.contacts = contacts;
+          this.maxContactId = this.getMaxId();
+          this.contactListChangedEvent.next(this.contacts.slice());
+        }
+      )
+  }
+
+  storeContacts(){
+    let documentArray = JSON.stringify(this.contacts);
+    console.log('store contacts method called');
+    console.log('the array that should be passed on is this: ' + documentArray);
+    this.http.put('https://cmscit366.firebaseio.com/contacts.json', documentArray)
+      .subscribe(
+        (response: Response)=> {
+          console.log(response)
+          console.log('Response has happened in store contacts');
+
+        }
+      );
+  }
+
+
+  constructor(private http: Http){
+    this.initContacts();
   }
 
 }
