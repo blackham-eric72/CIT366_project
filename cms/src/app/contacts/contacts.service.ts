@@ -3,13 +3,15 @@ import { Contact } from './contact.model';
 import { MOCKCONTACTS } from './MOCKCONTACTS';
 import {Subject} from "rxjs/Subject";
 import {Document} from "../documents/documents.model";
-import {Http, Response} from "@angular/http";
+import {HttpClient, HttpHeaders, HttpResponse} from "@angular/common/http";
 import 'rxjs/Rx';
+
+
 @Injectable()
 export class ContactsService {
  maxContactId: number;
-  contactChangedEvent = new EventEmitter<Contact[]>();
-  contacts :Contact[] = [];
+ contactChangedEvent = new EventEmitter<Contact[]>();
+ contacts :Contact[] = [];
  contactListChangedEvent = new Subject<Contact[]>();
 
 contactSelectedEvent = new EventEmitter<Contact>();
@@ -50,39 +52,72 @@ contactSelectedEvent = new EventEmitter<Contact>();
     if (newContact === undefined || newContact === null) {
       return;
     }
-    this.maxContactId++;
-    newContact.id = this.maxContactId.toString();
-    this.contacts.push(newContact);
-    let contactsListClone = this.contacts.slice();
-    this.storeContacts;
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json'
+    });
+    // this.maxContactId++;
+    const strContact = JSON.stringify(newContact);
+    this.http.post('http://localhost:3000/contacts', strContact, {headers: headers})
+      .map(
+        (res: any) => {
+          return res.obj;
+        })
+      .subscribe(
+        (contacts: Contact[]) => {
+          this.contacts = contacts;
+          this.contactChangedEvent.next(this.contacts.slice());
+        }
+      );
   }
-  updateContact(originalContact: Contact, newContact: Contact){
-    if( originalContact == null || newContact == null) return null;
-    let pos = this.contacts.indexOf(originalContact);
-    if( pos < 0 ) return;
 
-    newContact.id = originalContact.id;
-    this.contacts[pos] = newContact;
-    let contactsListClone = this.contacts.slice();
-    this.storeContacts;
-
+  updateContact(originalContact: Contact, newContact: Contact) {
+    if (originalContact == null || newContact == null) {
+      return;
+    }
+    const pos = this.contacts.indexOf(originalContact);
+    if (pos < 0) {
+      return;
+    }
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json'
+    });
+    const strContact = JSON.stringify(newContact);
+    this.http.patch('http://localhost:3000/contacts/' + originalContact.id, strContact,{headers: headers})
+      .map(
+        (res: any) => {
+          return res.obj;
+        })
+      .subscribe(
+        (contacts: Contact[]) => {
+          this.contacts = contacts;
+          this.contactChangedEvent.next(this.contacts.slice());
+        }
+      );
   }
 
   deleteContact(contact: Contact){
-    if( contact == null) return;
-    let pos = this.contacts.indexOf(contact);
-    if( pos < 0 ) return;
-    this.contacts.splice( pos, 1);
-    let documentsListClone = this.contacts.slice();
-    this.storeContacts();
-  }
+    if ( !contact) {
+        return;
+      }
+      this.http.delete('http://localhost:3000/contacts/'+ contact.id)
+        .map(
+          (res: any) => {
+            return res.obj;
+          })
+        .subscribe(
+          (contacts: Contact[]) => {
+            this.contacts = contacts;
+            this.contactChangedEvent.next(this.contacts.slice());
+          }
+        );
+    }
 
   initContacts(){
-    this.http.get('https://cmscit366.firebaseio.com/contacts.json')
+    this.http.get('http://localhost:3000/contacts')
       .map(
-        (response: Response) => {
-          const contacts: Contact[] = response.json();
-          return contacts;
+        (response: any) => {
+          // const contacts: Contact[] = response.json();
+          return response.obj;
         }
       )
       .subscribe(
@@ -94,22 +129,10 @@ contactSelectedEvent = new EventEmitter<Contact>();
       )
   }
 
-  storeContacts(){
-    let documentArray = JSON.stringify(this.contacts);
-    console.log('store contacts method called');
-    console.log('the array that should be passed on is this: ' + documentArray);
-    this.http.put('https://cmscit366.firebaseio.com/contacts.json', documentArray)
-      .subscribe(
-        (response: Response)=> {
-          console.log(response)
-          console.log('Response has happened in store contacts');
-
-        }
-      );
-  }
 
 
-  constructor(private http: Http){
+
+  constructor(private http: HttpClient){
     this.initContacts();
   }
 

@@ -2,15 +2,15 @@ import { Injectable, EventEmitter } from '@angular/core';
 import { Message } from './message.model';
 import { MOCKMESSAGES } from './MOCKMESSAGES';
 import {Contact} from "../contacts/contact.model";
-import {Http, Response} from "@angular/http";
+import {HttpClient, HttpHeaders, HttpResponse} from "@angular/common/http";
 import 'rxjs/Rx';
+import {Document} from "../documents/documents.model";
 
 @Injectable()
 export class MessagesService {
   messageChangedEvent = new EventEmitter<Message[]>();
-
-messages: Message[] = [];
-maxMessageId: number;
+  messages: Message[] = [];
+  maxMessageId: number;
 
   getMaxId():number {
 
@@ -26,11 +26,11 @@ maxMessageId: number;
   }
 
   initMessages(){
-    this.http.get('https://cmscit366.firebaseio.com/messages.json')
+    this.http.get('http://localhost:3000/messages')
       .map(
-        (response: Response) => {
-          const messages: Message[] = response.json();
-          return messages;
+        (response: any) => {
+          // const messages: Message[] = response.json();
+          return response.obj;
         }
       )
       .subscribe(
@@ -42,21 +42,21 @@ maxMessageId: number;
       )
   }
 
-  storeMessages(){
-    let messageArray = JSON.stringify(this.messages);
-    console.log('store messages method called');
-    console.log('the array of MESSAGES that should be passed on is this: ' + messageArray);
-    this.http.put('https://cmscit366.firebaseio.com/messages.json', messageArray)
-      .subscribe(
-        (response: Response)=> {
-          console.log(response)
-          console.log('Response has happened in store messages');
-        }
-      );
-  }
+  // storeMessages(){
+  //   let messageArray = JSON.stringify(this.messages);
+  //   console.log('store messages method called');
+  //   console.log('the array of MESSAGES that should be passed on is this: ' + messageArray);
+  //   this.http.put('https://cmscit366.firebaseio.com/messages.json', messageArray)
+  //     .subscribe(
+  //       (response: Response)=> {
+  //         console.log(response)
+  //         console.log('Response has happened in store messages');
+  //       }
+  //     );
+  // }
 
 
-  constructor(private http: Http) {
+  constructor(private http: HttpClient) {
     this.initMessages();
   }
   getMessages() :Message[]{
@@ -64,8 +64,25 @@ maxMessageId: number;
   } ;
 
   addMessage(message: Message) {
-    this.messages.push(message);
-    this.storeMessages();
+    if (message === undefined || message === null) {
+      return;
+    }
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json'
+    });
+    const strDocument = JSON.stringify(message);
+    this.http.post('http://localhost:3000/messages', strDocument, {headers: headers})
+      .map(
+        (res: any) => {
+          return res.obj;
+        })
+      .subscribe(
+        (messages: Message[]) => {
+          this.messages = messages;
+          this.maxMessageId = this.getMaxId();
+          this.messageChangedEvent.next(this.messages.slice());
+        }
+      );
   }
 
   getMessage(id:string ):Message {
